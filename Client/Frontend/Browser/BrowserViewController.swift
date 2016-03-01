@@ -1450,6 +1450,10 @@ extension BrowserViewController: BrowserDelegate {
         findInPageHelper.delegate = self
         browser.addHelper(findInPageHelper, name: FindInPageHelper.name())
 
+        let printHelper = PrintHelper(browser: browser)
+        printHelper.delegate = self
+        browser.addHelper(printHelper, name: PrintHelper.name())
+
         let openURL = {(url: NSURL) -> Void in
             self.switchToTabForURLOrOpen(url)
         }
@@ -2738,5 +2742,19 @@ extension BrowserViewController: FindInPageBarDelegate, FindInPageHelperDelegate
 extension BrowserViewController: JSPromptAlertControllerDelegate {
     func promptAlertControllerDidDismiss(alertController: JSPromptAlertController) {
         showQueuedAlertIfAvailable()
+    }
+}
+
+extension BrowserViewController: PrintHelperDelegate {
+    func printHelper(printHelper: PrintHelper, didRequestToPrintTab tab: Browser) {
+        if let webView = tab.webView {
+            let printController = UIPrintInteractionController.sharedPrintController()
+            printController.printFormatter = webView.viewPrintFormatter()
+            printController.presentAnimated(true) { (controller, completed, error) -> Void in
+                if let error = error {
+
+                }
+            }
+        }
     }
 }
