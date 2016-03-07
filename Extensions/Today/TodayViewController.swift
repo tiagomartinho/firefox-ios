@@ -93,7 +93,7 @@ class TodayViewController: UIViewController, NCWidgetProviding {
 
     @objc func onPressNewTab(view: UIView) {
         log.info("newTab Pressed")
-        self.extensionContext?.openURL(NSURL(string: "firefox://?url=https://duckduckgo.com")!) { success in
+        self.extensionContext?.openURL(NSURL(string: "firefox://newTab")!) { success in
             log.info("Success! \(success)")
         }
     }

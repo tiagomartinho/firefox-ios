@@ -223,26 +223,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 return false
             }
             var url: String?
+            var isPrivate: Bool = false
             for item in (components.queryItems ?? []) as [NSURLQueryItem] {
                 switch item.name {
                 case "url":
                     url = item.value
+                case "private":
+                    isPrivate = (item.value != "false" && item.value != "0")
                 default: ()
                 }
             }
+
 
             if let url = url, newURL = NSURL(string: url.unescape()) {
                 // If we are active then we can ask the BVC to open the new tab right away. Else we remember the
                 // URL and we open it in applicationDidBecomeActive.
                 if application.applicationState == .Active {
                     if #available(iOS 9, *) {
-                        self.browserViewController.switchToPrivacyMode(isPrivate: false)
+                        self.browserViewController.openURLInNewTab(newURL, isPrivate: isPrivate)
+                    } else {
+                        self.browserViewController.openURLInNewTab(newURL)
                     }
-                    self.browserViewController.openURLInNewTab(newURL)
                 } else {
                     openInFirefoxURL = newURL
                 }
                 return true
+            } else {
+                if #available(iOS 9, *) {
+                    self.browserViewController.openBlankNewTabAndFocus(isPrivate: isPrivate)
+                }
             }
         }
         return false
