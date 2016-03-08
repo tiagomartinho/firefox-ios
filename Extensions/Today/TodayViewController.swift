@@ -9,11 +9,10 @@ import SnapKit
 
 private let log = Logger.browserLogger
 
+private let privateBrowsingColor = UIColor(colorString: "CE6EFC")
+
 @objc (TodayViewController)
 class TodayViewController: UIViewController, NCWidgetProviding {
-
-
-    private var buttons: [UIButton]?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,26 +22,20 @@ class TodayViewController: UIViewController, NCWidgetProviding {
         effectView.frame = self.view.bounds
         effectView.autoresizingMask = self.view.autoresizingMask
 
-        let ogView = self.view
         self.view = effectView
-        self.view.addSubview(ogView)
         self.view.tintColor = UIColor.clearColor()
 
-//        view.backgroundColor = UIColor.blueColor()
-
         let buttonContainer = UIView()
-        ogView.addSubview(buttonContainer)
-//        buttonContainer.backgroundColor = UIColor.clearColor()
+        self.view.addSubview(buttonContainer)
 
-        buttonContainer.snp_remakeConstraints { make in
+        buttonContainer.snp_makeConstraints { make in
             make.center.equalTo(view.snp_center)
             make.size.equalTo(view.snp_size)
         }
 
-
         let newTabButton = createNewTabButton()
         buttonContainer.addSubview(newTabButton)
-        newTabButton.snp_remakeConstraints { make in
+        newTabButton.snp_makeConstraints { make in
             make.topMargin.equalTo(10)
             make.leftMargin.equalTo(10)
             make.height.width.equalTo(44)
@@ -50,37 +43,36 @@ class TodayViewController: UIViewController, NCWidgetProviding {
 
         let newPrivateTabButton = createNewPrivateTabButton()
         buttonContainer.addSubview(newPrivateTabButton)
-        newPrivateTabButton.snp_remakeConstraints { make in
+
+        newPrivateTabButton.snp_makeConstraints { make in
             make.centerY.equalTo(newTabButton.snp_centerY)
-            make.centerX.equalTo(newTabButton.snp_centerX).offset(88)
-            make.height.width.equalTo(newTabButton.snp_width)
+            make.size.equalTo(newTabButton.snp_size)
         }
 
-        buttons = [newTabButton, newPrivateTabButton]
+        let newTabLabel = createNewTabLabel()
+        buttonContainer.addSubview(newTabLabel)
+        alignButton(newTabButton, withLabel: newTabLabel)
+
+        let newPrivateTabLabel = createNewPrivateTabLabel()
+        buttonContainer.addSubview(newPrivateTabLabel)
+
+        newPrivateTabLabel.snp_makeConstraints { make in
+            make.left.equalTo(newTabLabel.snp_right).offset(22)
+        }
+
+        alignButton(newPrivateTabButton, withLabel: newPrivateTabLabel)
 
     }
-
-    private func createNewPrivateTabButton() -> UIButton {
-        let button = UIButton()
-        button.addTarget(self, action: Selector("onPressNewPrivateTab:"), forControlEvents: .TouchUpInside)
-        button.setTitle("*", forState: .Normal)
-        button.setTitle("-", forState: .Highlighted)
-        return button
-    }
-
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        buttons?.forEach { b in
-            roundButton(b)
-        }
     }
 
-    private func roundButton(button: UIButton) {
-        button.layer.cornerRadius = 0.5 * button.bounds.size.width
-        button.clipsToBounds = true
-        button.layer.borderColor = UIColor.whiteColor().CGColor
-        button.layer.borderWidth = 1
+    private func alignButton(button: UIButton, withLabel label: UILabel) {
+        label.snp_makeConstraints { make in
+            make.centerX.equalTo(button.snp_centerX)
+            make.centerY.equalTo(button.snp_centerY).offset(44)
+        }
     }
 
     override func loadView() {
@@ -102,13 +94,40 @@ class TodayViewController: UIViewController, NCWidgetProviding {
         completionHandler(NCUpdateResult.NewData)
     }
 
+    // MARK: Button and label creation
+
+    private func createNewTabLabel() -> UILabel {
+        return createButtonLabel(NSLocalizedString("New Tab", comment: "New Tab button label"))
+    }
+
+    private func createNewPrivateTabLabel() -> UILabel {
+        return createButtonLabel(NSLocalizedString("New Private Tab", comment: "New Private Tab button label"), color: privateBrowsingColor)
+    }
+
+    private func createButtonLabel(text: String, color: UIColor = UIColor.whiteColor()) -> UILabel {
+        let label = UILabel()
+        label.text = text
+        label.textColor = color
+        return label
+    }
+
     private func createNewTabButton() -> UIButton {
         let button = UIButton()
         button.addTarget(self, action: Selector("onPressNewTab:"), forControlEvents: .TouchUpInside)
-        button.setTitle("+", forState: .Normal)
-        button.setTitle("-", forState: .Highlighted)
+        button.setImage(UIImage(named: "new_tab_button_normal"), forState: .Normal)
+        button.setImage(UIImage(named: "new_tab_button_highlight"), forState: .Highlighted)
         return button
     }
+
+    private func createNewPrivateTabButton() -> UIButton {
+        let button = UIButton()
+        button.addTarget(self, action: Selector("onPressNewPrivateTab:"), forControlEvents: .TouchUpInside)
+        button.setImage(UIImage(named: "new_private_tab_button_normal"), forState: .Normal)
+        button.setImage(UIImage(named: "new_private_tab_button_highlight"), forState: .Highlighted)
+        return button
+    }
+
+    // MARK: Button behaviour
 
     @objc func onPressNewTab(view: UIView) {
         openContainingApp("firefox://")
