@@ -40,23 +40,34 @@ class TodayViewController: UIViewController, NCWidgetProviding {
         }
 
 
-        let button = UIButton()
-        buttonContainer.addSubview(button)
-//        button.backgroundColor = UIColor.blackColor()
-        button.addTarget(self, action: Selector("onPressNewTab:"), forControlEvents: .TouchUpInside)
-
-        button.setTitle("+", forState: .Normal)
-        button.setTitle("-", forState: .Highlighted)
-
-        button.snp_remakeConstraints { make in
+        let newTabButton = createNewTabButton()
+        buttonContainer.addSubview(newTabButton)
+        newTabButton.snp_remakeConstraints { make in
             make.topMargin.equalTo(10)
             make.leftMargin.equalTo(10)
             make.height.width.equalTo(44)
         }
 
-        buttons = [button]
+        let newPrivateTabButton = createNewPrivateTabButton()
+        buttonContainer.addSubview(newPrivateTabButton)
+        newPrivateTabButton.snp_remakeConstraints { make in
+            make.centerY.equalTo(newTabButton.snp_centerY)
+            make.centerX.equalTo(newTabButton.snp_centerX).offset(88)
+            make.height.width.equalTo(newTabButton.snp_width)
+        }
+
+        buttons = [newTabButton, newPrivateTabButton]
 
     }
+
+    private func createNewPrivateTabButton() -> UIButton {
+        let button = UIButton()
+        button.addTarget(self, action: Selector("onPressNewPrivateTab:"), forControlEvents: .TouchUpInside)
+        button.setTitle("*", forState: .Normal)
+        button.setTitle("-", forState: .Highlighted)
+        return button
+    }
+
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -91,10 +102,25 @@ class TodayViewController: UIViewController, NCWidgetProviding {
         completionHandler(NCUpdateResult.NewData)
     }
 
+    private func createNewTabButton() -> UIButton {
+        let button = UIButton()
+        button.addTarget(self, action: Selector("onPressNewTab:"), forControlEvents: .TouchUpInside)
+        button.setTitle("+", forState: .Normal)
+        button.setTitle("-", forState: .Highlighted)
+        return button
+    }
+
     @objc func onPressNewTab(view: UIView) {
-        log.info("newTab Pressed")
-        self.extensionContext?.openURL(NSURL(string: "firefox://newTab")!) { success in
-            log.info("Success! \(success)")
+        openContainingApp("firefox://")
+    }
+
+    @objc func onPressNewPrivateTab(view: UIView) {
+        openContainingApp("firefox://?private=true")
+    }
+
+    private func openContainingApp(urlString: String) {
+        self.extensionContext?.openURL(NSURL(string: urlString)!) { success in
+            log.info("Extension opened containing app: \(success)")
         }
     }
 }
