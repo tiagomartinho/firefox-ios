@@ -22,45 +22,44 @@ class TodayViewController: UIViewController, NCWidgetProviding {
         effectView.frame = self.view.bounds
         effectView.autoresizingMask = self.view.autoresizingMask
 
-        self.view = effectView
-        self.view.tintColor = UIColor.clearColor()
+        view = effectView
+        view.tintColor = UIColor.clearColor()
 
         let buttonContainer = UIView()
-        self.view.addSubview(buttonContainer)
+        view.addSubview(buttonContainer)
+
+//        view.backgroundColor = UIColor.blueColor()
+//        buttonContainer.backgroundColor = UIColor.redColor()
 
         buttonContainer.snp_makeConstraints { make in
-            make.center.equalTo(view.snp_center)
-            make.size.equalTo(view.snp_size)
+            make.edges.equalTo(self.view).inset(UIEdgeInsetsMake(10, 10, 10, 10))
         }
 
+        // New tab button and label.
         let newTabButton = createNewTabButton()
         buttonContainer.addSubview(newTabButton)
         newTabButton.snp_makeConstraints { make in
             make.topMargin.equalTo(10)
-            make.leftMargin.equalTo(10)
+            make.leading.equalTo(buttonContainer.snp_leading).offset(44)
             make.height.width.equalTo(44)
-        }
-
-        let newPrivateTabButton = createNewPrivateTabButton()
-        buttonContainer.addSubview(newPrivateTabButton)
-
-        newPrivateTabButton.snp_makeConstraints { make in
-            make.centerY.equalTo(newTabButton.snp_centerY)
-            make.size.equalTo(newTabButton.snp_size)
         }
 
         let newTabLabel = createNewTabLabel()
         buttonContainer.addSubview(newTabLabel)
         alignButton(newTabButton, withLabel: newTabLabel)
 
-        let newPrivateTabLabel = createNewPrivateTabLabel()
-        buttonContainer.addSubview(newPrivateTabLabel)
-
-        newPrivateTabLabel.snp_makeConstraints { make in
-            make.left.equalTo(newTabLabel.snp_right).offset(22)
+        // New tab button and label.
+        let newPrivateTabButton = createNewPrivateTabButton()
+        buttonContainer.addSubview(newPrivateTabButton)
+        newPrivateTabButton.snp_makeConstraints { make in
+            make.centerY.equalTo(newTabButton.snp_centerY)
+            make.size.equalTo(newTabButton.snp_size)
+            make.trailing.equalTo(buttonContainer.snp_trailing).offset(-44)
         }
 
-        alignButton(newPrivateTabButton, withLabel: newPrivateTabLabel)
+        let newPrivateTabLabel = createNewPrivateTabLabel()
+        buttonContainer.addSubview(newPrivateTabLabel)
+        alignButton(newPrivateTabButton, withLabel: newPrivateTabLabel, leftOf: newTabLabel)
 
     }
 
@@ -68,15 +67,18 @@ class TodayViewController: UIViewController, NCWidgetProviding {
         super.viewDidLayoutSubviews()
     }
 
-    private func alignButton(button: UIButton, withLabel label: UILabel) {
+    private func alignButton(button: UIButton, withLabel label: UILabel, leftOf leftLabel: UILabel? = nil) {
         label.snp_makeConstraints { make in
             make.centerX.equalTo(button.snp_centerX)
-            make.centerY.equalTo(button.snp_centerY).offset(44)
+            make.centerY.equalTo(button.snp_centerY).offset(33)
+            if let leftLabel = leftLabel {
+                make.centerX.equalTo(leftLabel.snp_centerX).offset(44).priorityHigh()
+            }
         }
     }
 
     override func loadView() {
-        view = UIView(frame:CGRect(x:0.0, y:0, width:320.0, height:200.0))
+        view = UIView(frame:CGRect(x:0.0, y:0, width:320.0, height:100.0))
     }
 
     override func didReceiveMemoryWarning() {
